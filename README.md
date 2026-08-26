@@ -1,1 +1,0 @@
-# medibook-doctor-appointment-app
