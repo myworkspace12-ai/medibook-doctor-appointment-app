@@ -54,6 +54,91 @@ function BookAppointment() {
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
 
+  const getDayName = (selectedDate) => {
+    const dateObject = new Date(
+      selectedDate + "T00:00:00"
+    );
+
+    return dateObject.toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+      }
+    );
+  };
+
+  const handleDateChange = (event) => {
+    const selectedDate = event.target.value;
+
+    if (!selectedDate) {
+      setDate("");
+      return;
+    }
+
+    const selectedDay =
+      getDayName(selectedDate);
+
+    if (
+      doctor.availableDays &&
+      doctor.availableDays.length > 0 &&
+      !doctor.availableDays.includes(selectedDay)
+    ) {
+      alert(
+        `Doctor is not available on ${selectedDay}.`
+      );
+
+      setDate("");
+      setTime("");
+
+      return;
+    }
+
+    setDate(selectedDate);
+    setTime("");
+  };
+
+  const getAvailableSlots = () => {
+    if (!date) {
+      return [];
+    }
+
+    const appointments =
+      JSON.parse(
+        localStorage.getItem("appointments")
+      ) || [];
+
+    const doctorSlots =
+      doctor.availableSlots &&
+      doctor.availableSlots.length > 0
+        ? doctor.availableSlots
+        : [
+            "9:00 AM",
+            "10:00 AM",
+            "11:00 AM",
+            "2:00 PM",
+            "3:00 PM",
+            "4:00 PM",
+          ];
+
+    const bookedSlots = appointments
+      .filter(
+        (appointment) =>
+          String(appointment.doctorId) ===
+            String(doctor.id) &&
+          appointment.date === date &&
+          appointment.status !== "Cancelled"
+      )
+      .map(
+        (appointment) =>
+          appointment.time
+      );
+
+    return doctorSlots.filter(
+      (slot) =>
+        !bookedSlots.includes(slot)
+    );
+  };
+
   const handleBooking = (event) => {
     event.preventDefault();
 
@@ -90,6 +175,25 @@ function BookAppointment() {
       JSON.parse(
         localStorage.getItem("appointments")
       ) || [];
+
+    const alreadyBooked =
+      appointments.find(
+        (appointment) =>
+          String(appointment.doctorId) ===
+            String(doctor.id) &&
+          appointment.date === date &&
+          appointment.time === time &&
+          appointment.status !== "Cancelled"
+      );
+
+    if (alreadyBooked) {
+      alert(
+        "This appointment slot is already booked."
+      );
+
+      setTime("");
+      return;
+    }
 
     const newAppointment = {
       id: Date.now(),
@@ -140,6 +244,14 @@ function BookAppointment() {
     );
   }
 
+  const availableSlots =
+    getAvailableSlots();
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
   return (
     <section className="booking-page">
 
@@ -158,35 +270,6 @@ function BookAppointment() {
           <p>
             {doctor.specialization}
           </p>
-
-        </div>
-
-        <div className="booking-doctor-card">
-
-          <img
-            src={doctor.image}
-            alt={doctor.name}
-          />
-
-          <div>
-
-            <h2>
-              {doctor.name}
-            </h2>
-
-            <p>
-              {doctor.specialization}
-            </p>
-
-            <p>
-              {doctor.location}
-            </p>
-
-            <strong>
-              Consultation Fee: ${doctor.fee}
-            </strong>
-
-          </div>
 
         </div>
 
@@ -218,10 +301,9 @@ function BookAppointment() {
 
             <input
               type="date"
+              min={today}
               value={date}
-              onChange={(event) =>
-                setDate(event.target.value)
-              }
+              onChange={handleDateChange}
               required
             />
 
@@ -238,6 +320,7 @@ function BookAppointment() {
               onChange={(event) =>
                 setTime(event.target.value)
               }
+              disabled={!date}
               required
             >
 
@@ -245,47 +328,25 @@ function BookAppointment() {
                 Select Time
               </option>
 
-              {doctor.availableSlots &&
-              doctor.availableSlots.length > 0 ? (
-                doctor.availableSlots.map(
-                  (slot) => (
-                    <option
-                      key={slot}
-                      value={slot}
-                    >
-                      {slot}
-                    </option>
-                  )
+              {availableSlots.map(
+                (slot) => (
+                  <option
+                    key={slot}
+                    value={slot}
+                  >
+                    {slot}
+                  </option>
                 )
-              ) : (
-                <>
-                  <option value="9:00 AM">
-                    9:00 AM
-                  </option>
-
-                  <option value="10:00 AM">
-                    10:00 AM
-                  </option>
-
-                  <option value="11:00 AM">
-                    11:00 AM
-                  </option>
-
-                  <option value="2:00 PM">
-                    2:00 PM
-                  </option>
-
-                  <option value="3:00 PM">
-                    3:00 PM
-                  </option>
-
-                  <option value="4:00 PM">
-                    4:00 PM
-                  </option>
-                </>
               )}
 
             </select>
+
+            {date &&
+              availableSlots.length === 0 && (
+                <p className="empty-message">
+                  No available slots for this date.
+                </p>
+              )}
 
           </div>
 
@@ -309,6 +370,10 @@ function BookAppointment() {
           <button
             type="submit"
             className="auth-button"
+            disabled={
+              !date ||
+              availableSlots.length === 0
+            }
           >
             Confirm Appointment
           </button>
