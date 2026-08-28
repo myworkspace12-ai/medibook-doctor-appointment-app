@@ -65,6 +65,9 @@ function DoctorDashboard() {
           <Link to="/doctor-profile" className="book-new-button">
             Edit Profile
           </Link>
+          <Link to="/doctor-availability" className="book-new-button">
+            Manage Availability
+          </Link>
         </div>
 
         <div className="dashboard-stats">

@@ -1,16 +1,24 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+} from "react-router-dom";
+
 import staticDoctors from "../data/doctors";
 
 function BookAppointment() {
   const { id } = useParams();
-
   const navigate = useNavigate();
-  
-  const users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const users =
+    JSON.parse(localStorage.getItem("users")) || [];
 
   const registeredDoctors = users
-    .filter((user) => user.role === "doctor" && user.approved === true)
+    .filter(
+      (user) =>
+        user.role === "doctor" &&
+        user.approved === true
+    )
     .map((doctor) => ({
       id: doctor.id,
       name: doctor.name,
@@ -20,146 +28,295 @@ function BookAppointment() {
       fee: doctor.fee,
       available: doctor.available,
       rating: doctor.rating || 0,
+
+      availableDays:
+        doctor.availableDays || [],
+
+      availableSlots:
+        doctor.availableSlots || [],
+
       image:
         doctor.image ||
         "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=500",
     }));
 
-  const allDoctors = [...staticDoctors, ...registeredDoctors];
+  const allDoctors = [
+    ...staticDoctors,
+    ...registeredDoctors,
+  ];
 
-  const doctor = allDoctors.find((doctor) => String(doctor.id) === String(id));
+  const doctor = allDoctors.find(
+    (doctor) =>
+      String(doctor.id) === String(id)
+  );
 
-  const [patientName, setPatientName] = useState("");
-  const [email, setEmail] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [reason, setReason] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleBooking = (event) => {
     event.preventDefault();
 
-    if (!patientName || !email || !date || !time) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    const loggedInUser = JSON.parse(
+      localStorage.getItem("loggedInUser")
+    );
 
     if (!loggedInUser) {
-      alert("Please login before booking an appointment");
+      alert(
+        "Please login before booking an appointment."
+      );
+
       navigate("/login");
       return;
     }
 
-    const appointment = {
+    if (loggedInUser.role !== "patient") {
+      alert(
+        "Only patients can book appointments."
+      );
+
+      return;
+    }
+
+    if (!date || !time) {
+      alert(
+        "Please select appointment date and time."
+      );
+
+      return;
+    }
+
+    const appointments =
+      JSON.parse(
+        localStorage.getItem("appointments")
+      ) || [];
+
+    const newAppointment = {
       id: Date.now(),
-      patientId: loggedInUser.id,
-      patientName,
-      email,
-      doctorName: doctor.name,
+
       doctorId: doctor.id,
+      doctorName: doctor.name,
+
+      specialization:
+        doctor.specialization,
+
+      patientId: loggedInUser.id,
+      patientName: loggedInUser.name,
+
       date,
       time,
-      status: "Upcoming",
+      reason,
+
+      status: "Pending",
     };
 
-    const appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    appointments.push(newAppointment);
 
-    appointments.push(appointment);
+    localStorage.setItem(
+      "appointments",
+      JSON.stringify(appointments)
+    );
 
-    localStorage.setItem("appointments", JSON.stringify(appointments));
+    alert(
+      "Appointment booked successfully."
+    );
 
-    localStorage.setItem("latestAppointment", JSON.stringify(appointment));
-    navigate("/appointment-success");
+    navigate("/my-appointments");
   };
 
   if (!doctor) {
-    return <h2>Doctor not found</h2>;
+    return (
+      <div className="empty-message">
+        Doctor not found.
+      </div>
+    );
+  }
+
+  if (doctor.available === false) {
+    return (
+      <div className="empty-message">
+        This doctor is currently not available.
+      </div>
+    );
   }
 
   return (
     <section className="booking-page">
+
       <div className="booking-container">
-        <div className="booking-doctor-card">
-          <img src={doctor.image} alt={doctor.name} />
 
-          <div>
-            <p className="booking-label">Booking appointment with</p>
+        <div className="profile-header">
 
-            <h2>{doctor.name}</h2>
-
-            <p>{doctor.specialization}</p>
-
-            <span>⭐ {doctor.rating}</span>
-          </div>
-        </div>
-
-        <form className="booking-form" onSubmit={handleSubmit}>
-          <h1>Book Appointment</h1>
-
-          <p className="form-description">
-            Enter your details and select your preferred appointment time.
+          <p className="section-label">
+            Book Appointment
           </p>
 
+          <h1>
+            Book with {doctor.name}
+          </h1>
+
+          <p>
+            {doctor.specialization}
+          </p>
+
+        </div>
+
+        <div className="booking-doctor-card">
+
+          <img
+            src={doctor.image}
+            alt={doctor.name}
+          />
+
+          <div>
+
+            <h2>
+              {doctor.name}
+            </h2>
+
+            <p>
+              {doctor.specialization}
+            </p>
+
+            <p>
+              {doctor.location}
+            </p>
+
+            <strong>
+              Consultation Fee: ${doctor.fee}
+            </strong>
+
+          </div>
+
+        </div>
+
+        {doctor.availableDays &&
+          doctor.availableDays.length > 0 && (
+            <div className="doctor-about">
+
+              <h3>
+                Available Days
+              </h3>
+
+              <p>
+                {doctor.availableDays.join(", ")}
+              </p>
+
+            </div>
+          )}
+
+        <form
+          className="profile-form"
+          onSubmit={handleBooking}
+        >
+
           <div className="form-group">
-            <label>Patient Name</label>
+
+            <label>
+              Appointment Date
+            </label>
 
             <input
-              type="text"
-              placeholder="Enter your full name"
-              value={patientName}
-              onChange={(event) => setPatientName(event.target.value)}
+              type="date"
+              value={date}
+              onChange={(event) =>
+                setDate(event.target.value)
+              }
+              required
             />
+
           </div>
 
           <div className="form-group">
-            <label>Email Address</label>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+            <label>
+              Appointment Time
+            </label>
+
+            <select
+              value={time}
+              onChange={(event) =>
+                setTime(event.target.value)
+              }
+              required
+            >
+
+              <option value="">
+                Select Time
+              </option>
+
+              {doctor.availableSlots &&
+              doctor.availableSlots.length > 0 ? (
+                doctor.availableSlots.map(
+                  (slot) => (
+                    <option
+                      key={slot}
+                      value={slot}
+                    >
+                      {slot}
+                    </option>
+                  )
+                )
+              ) : (
+                <>
+                  <option value="9:00 AM">
+                    9:00 AM
+                  </option>
+
+                  <option value="10:00 AM">
+                    10:00 AM
+                  </option>
+
+                  <option value="11:00 AM">
+                    11:00 AM
+                  </option>
+
+                  <option value="2:00 PM">
+                    2:00 PM
+                  </option>
+
+                  <option value="3:00 PM">
+                    3:00 PM
+                  </option>
+
+                  <option value="4:00 PM">
+                    4:00 PM
+                  </option>
+                </>
+              )}
+
+            </select>
+
+          </div>
+
+          <div className="form-group">
+
+            <label>
+              Reason for Visit
+            </label>
+
+            <textarea
+              placeholder="Describe your reason for appointment..."
+              value={reason}
+              onChange={(event) =>
+                setReason(event.target.value)
+              }
+              rows="4"
             />
+
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Appointment Date</label>
-
-              <input
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Appointment Time</label>
-
-              <select
-                value={time}
-                onChange={(event) => setTime(event.target.value)}
-              >
-                <option value="">Select Time</option>
-
-                <option value="9:00 AM">9:00 AM</option>
-
-                <option value="10:00 AM">10:00 AM</option>
-
-                <option value="11:00 AM">11:00 AM</option>
-
-                <option value="2:00 PM">2:00 PM</option>
-
-                <option value="3:00 PM">3:00 PM</option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" className="confirm-booking-button">
+          <button
+            type="submit"
+            className="auth-button"
+          >
             Confirm Appointment
           </button>
+
         </form>
+
       </div>
+
     </section>
   );
 }

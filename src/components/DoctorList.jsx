@@ -23,6 +23,13 @@ function DoctorList() {
       fee: doctor.fee,
       available: doctor.available,
       rating: doctor.rating || 0,
+
+      availableDays:
+        doctor.availableDays || [],
+
+      availableSlots:
+        doctor.availableSlots || [],
+
       image:
         doctor.image ||
         "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=500",

@@ -26,6 +26,13 @@ function DoctorDetails() {
       fee: doctor.fee,
       available: doctor.available,
       rating: doctor.rating || 0,
+
+      availableDays:
+        doctor.availableDays || [],
+
+      availableSlots:
+        doctor.availableSlots || [],
+
       image:
         doctor.image ||
         "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=500",
@@ -42,25 +49,34 @@ function DoctorDetails() {
   );
 
   if (!doctor) {
-    return <h2>Doctor not found</h2>;
+    return (
+      <h2 className="empty-message">
+        Doctor not found
+      </h2>
+    );
   }
 
   return (
     <section className="doctor-details-page">
+
       <div className="doctor-details-card">
 
         <div className="doctor-details-image-section">
+
           <img
             src={doctor.image}
             alt={doctor.name}
             className="doctor-details-image"
           />
+
         </div>
 
         <div className="doctor-details-content">
 
           <div className="doctor-details-header">
+
             <div>
+
               <p className="doctor-specialization">
                 {doctor.specialization}
               </p>
@@ -68,6 +84,7 @@ function DoctorDetails() {
               <h1>
                 {doctor.name}
               </h1>
+
             </div>
 
             <span
@@ -81,6 +98,7 @@ function DoctorDetails() {
                 ? "Available"
                 : "Not Available"}
             </span>
+
           </div>
 
           <div className="doctor-rating">
@@ -90,6 +108,7 @@ function DoctorDetails() {
           <div className="doctor-details-info">
 
             <div className="detail-box">
+
               <span>
                 Experience
               </span>
@@ -97,9 +116,11 @@ function DoctorDetails() {
               <strong>
                 {doctor.experience} Years
               </strong>
+
             </div>
 
             <div className="detail-box">
+
               <span>
                 Location
               </span>
@@ -107,9 +128,11 @@ function DoctorDetails() {
               <strong>
                 {doctor.location}
               </strong>
+
             </div>
 
             <div className="detail-box">
+
               <span>
                 Consultation Fee
               </span>
@@ -117,11 +140,43 @@ function DoctorDetails() {
               <strong>
                 ${doctor.fee}
               </strong>
+
             </div>
 
           </div>
 
+          {doctor.availableDays &&
+            doctor.availableDays.length > 0 && (
+              <div className="doctor-about">
+
+                <h2>
+                  Available Days
+                </h2>
+
+                <p>
+                  {doctor.availableDays.join(", ")}
+                </p>
+
+              </div>
+            )}
+
+          {doctor.availableSlots &&
+            doctor.availableSlots.length > 0 && (
+              <div className="doctor-about">
+
+                <h2>
+                  Available Time Slots
+                </h2>
+
+                <p>
+                  {doctor.availableSlots.join(", ")}
+                </p>
+
+              </div>
+            )}
+
           <div className="doctor-about">
+
             <h2>
               About Doctor
             </h2>
@@ -133,9 +188,11 @@ function DoctorDetails() {
               services and personalized treatment
               for patients.
             </p>
+
           </div>
 
           <div className="doctor-actions">
+
             <Link
               to="/"
               className="back-button"
@@ -151,11 +208,13 @@ function DoctorDetails() {
                 Book Appointment
               </Link>
             )}
+
           </div>
 
         </div>
 
       </div>
+
     </section>
   );
 }

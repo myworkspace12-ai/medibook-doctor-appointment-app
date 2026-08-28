@@ -17,6 +17,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import DoctorProfile from "./pages/DoctorProfile";
+import DoctorAvailability from "./pages/DoctorAvailability";
 
 function App() {
   useEffect(() => {
@@ -113,6 +114,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["doctor"]}>
               <DoctorProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor-availability"
+          element={
+            <ProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorAvailability />
             </ProtectedRoute>
           }
         />

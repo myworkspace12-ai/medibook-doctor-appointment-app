@@ -1418,3 +1418,53 @@ select {
     0 20px 50px
     rgba(15, 23, 42, 0.06);
 }
+
+.availability-page {
+  width: 86%;
+  margin: 50px auto;
+  min-height: 75vh;
+}
+
+.availability-container {
+  max-width: 850px;
+  margin: auto;
+}
+
+.availability-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 35px;
+}
+
+.availability-card h2 {
+  margin-bottom: 18px;
+}
+
+.availability-options {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 35px;
+}
+
+.availability-option {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.availability-option:hover {
+  border-color: #2563eb;
+}
+
+.doctor-dashboard-actions {
+  display: flex;
+  gap: 12px;
+}
